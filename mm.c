@@ -18,10 +18,6 @@
 #define UNSCALED_POINTER_ADD(p, x) ((void*)((char*)(p) + (x)))
 #define UNSCALED_POINTER_SUB(p, x) ((void*)((char*)(p) - (x)))
 
-
-/******** FREE LIST IMPLEMENTATION ***********************************/
-
-
 /* An BlockInfo contains information about a block, including the size
    as well as pointers to the next and previous blocks in the free list.
    This is similar to the "explicit free list" structure illustrated in
