@@ -191,7 +191,7 @@ void* mm_malloc(size_t size) {
       //when actualBlockSize is larger then sizeOfBlock, the block is too large to allocate so we must start splitting
       if(actualBlockSize > sizeof(Block)){ //if we found a match but the new block is too big (we need to begin splitting)
         //first lets return the first address that the program can safely write to
-        splitBlock = (Block*)UNSCALED_POINTER_ADD(ptrFreeBlock, sizeof(BlockInfo) +reqSize); //save block pointer to splitBlock which is second part (or right side part) of split block. IE [Splitblock]
+        splitBlock = UNSCALED_POINTER_ADD(ptrFreeBlock, sizeof(BlockInfo) + reqSize); //save block pointer to splitBlock which is second part (or right side part) of split block. IE [Splitblock]
         splitBlock->info.prev = ptrFreeBlock; //this sets splitBlocks previous (which is the 1st part of splitlock, or left part) to be ptrFreeBlock, IE [ptrFreeBlock]][splitBlock]
         splitBlock->info.size = -(actualBlockSize); //we set splitBlock size to negation of actualBlock size to mark as "allocated"  
         //make sure when you split a block, it has enough space for all of the metadata: you MUST add the sizeOfBlockInfo to the splitBlockInfo.size because of this to account for metadata
