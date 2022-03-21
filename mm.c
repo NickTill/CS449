@@ -181,18 +181,10 @@ void* mm_malloc(size_t size) {
  //code starts here
   ptrFreeBlock = searchList(reqSize); //checks if there is a single block available in the heap  I.E [-1] [SPOT FOUND] [-1] [-1] [-1]
   //if we found NULL, aka searchList did not come back with any block of memory
-  if(ptrFreeBlock == NULL){ //coudlnt find space
-    Block* latestBlock = requestMoreSpace(reqSize + sizeof(BlockInfo)); //if theres  no space, we need to allocate extra space for the block (this created a new block with metadata) 
-    latestBlock->info.prev = malloc_list_tail; //adding block to end by makings its prevoius point to current malloc list tail
-    malloc_list_tail = latestBlock; //updating the malloc_list_tail pointer to point the new tail latest block
-    latestBlock->info.size = reqSize; //updating the size of the allocated block that was just initialized (everytime we make block we need to set the size)
-    ptrFreeBlock = latestBlock; //setting ptrFreeBlock to the tailBlock (aka latestBlock)
-  }
   //otherwise we found a block in the memory and now need to check if we should split or just simply mark as allocated
   if(ptrFreeBlock != NULL){ //if we found a block
       long int positiveSize = -(ptrFreeBlock->info.size); //compute positiveSize which is negation of ptrFreeBlock size (positive value we can use to deduce correct size)
       long int actualBlockSize = positiveSize - reqSize; //calculate the actualBlockSize by subtracting reqSize from positiveSize (which is the negation of ptrFreeBlock->info.size)
-
       // at this point we have found a match but the block is NOT too large, therefore just mark it as allocated:
       if(actualBlockSize <= sizeof(Block)) ptrFreeBlock->info.size*=-1;//if we found a match but the new block is NOT too big we simply can negate it 
 
@@ -210,6 +202,13 @@ void* mm_malloc(size_t size) {
         // if(tmpFreeBlock == NULL) malloc_list_tail = splitBlock; //this is causing segfault core dumped
         if(tmpFreeBlock != NULL) tmpFreeBlock->info.prev = splitBlock; //merge next_block(splitBlock) with its previous by setting nextSplitBlock(splitBlock) previous to be splitBlock
       }
+  }
+  if(ptrFreeBlock == NULL){ //coudlnt find space
+    Block* latestBlock = requestMoreSpace(reqSize + sizeof(BlockInfo)); //if theres  no space, we need to allocate extra space for the block (this created a new block with metadata) 
+    latestBlock->info.prev = malloc_list_tail; //adding block to end by makings its prevoius point to current malloc list tail
+    malloc_list_tail = latestBlock; //updating the malloc_list_tail pointer to point the new tail latest block
+    latestBlock->info.size = reqSize; //updating the size of the allocated block that was just initialized (everytime we make block we need to set the size)
+    ptrFreeBlock = latestBlock; //setting ptrFreeBlock to the tailBlock (aka latestBlock)
   }
   //return macro that returns first address that a program can safely write to
   return UNSCALED_POINTER_ADD(ptrFreeBlock, sizeof(BlockInfo));
@@ -234,7 +233,7 @@ void coalesce(Block* blockInfo) {
   }
   //checking previousBlock for coalesce (not null and size < 0 )
   if((previousBlock != NULL) && (previousBlock->info.size < 0)){
-    previousBlock->info.size += blockInfo->info.size - sizeof(BlockInfo);
+    previousBlock->info.size += blockInfo->info.size - sizeof(BlockInfo); //accounting for metadata
     tmpBlock = next_block(blockInfo); //acquire block to the right of blockInfo
     if(tmpBlock != NULL){ //check and see if it was tail or just a block in the chain, checks specifically we are not at Tail aka (not coalescing tail)
       tmpBlock->info.prev = previousBlock; //grabbing the block to the right and pointing it to the left (merging the two)
