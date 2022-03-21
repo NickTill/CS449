@@ -1,19 +1,3 @@
-// This adds coalescing of free blocks.
-// Improves performance to 54/100 ... takes less time.
-
-/*-------------------------------------------------------------------
- *  Malloc Lab Starter code:
- *        single doubly-linked free block list with LIFO policy
- *        with support for coalescing adjacent free blocks
- *
- * Terminology:
- * o We will implement an explicit free list allocator.
- * o We use "next" and "previous" to refer to blocks as ordered in
- *   the free list.
- * o We use "following" and "preceding" to refer to adjacent blocks
- *   in memory.
- *-------------------------------------------------------------------- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
