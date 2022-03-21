@@ -143,11 +143,13 @@ Block* searchList(size_t reqSize) {
   Block* ptrFreeBlock = first_block();
   long int checkSize = -reqSize;
   //code starts here...
-  while(ptrFreeBlock != NULL){ //while ptrFreeBlock is NOT null
-    if(checkSize >= ptrFreeBlock->info.size) return ptrFreeBlock; //return the block since we have found a fit
+  if(ptrFreeBlock != NULL){
+    while(ptrFreeBlock != NULL){ //while ptrFreeBlock is NOT null
+      if(checkSize >= ptrFreeBlock->info.size) return ptrFreeBlock; //return the block since we have found a fit
     ptrFreeBlock = next_block(ptrFreeBlock); //iterate to next available block
     }
-  return NULL; //if ptrfreeBlock null, that means we cant find space so return nulll
+  }
+  return NULL; //if ptrfreeBlock is NULL, that means we cant find space so return null (we'll need to request more space inside mm function if this happens)
 }
 
 /* Find a free block of at least the requested size in the free list.  Returns
