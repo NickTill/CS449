@@ -142,24 +142,12 @@ int check_heap();
 Block* searchList(size_t reqSize) {
   Block* ptrFreeBlock = first_block();
   long int checkSize = -reqSize;
-  // ptrFreeBlock will point to the beginning of the memory heap!
-  // end will point to the end of the memory heap.
-  // You want to go through every block until you hit the end.
-  // Make sure you read the explanation for the next_block function above.
-  // It should come in handy!
-  // YOUR CODE HERE!
-  if(ptrFreeBlock != NULL){
-  while(ptrFreeBlock != NULL){
-    if(ptrFreeBlock->info.size <= checkSize){
-      return ptrFreeBlock; //return the block since we have found a fit
+  //code starts here...
+  while(ptrFreeBlock != NULL){ //while ptrFreeBlock is NOT null
+    if(checkSize >= ptrFreeBlock->info.size) return ptrFreeBlock; //return the block since we have found a fit
+    ptrFreeBlock = next_block(ptrFreeBlock); //iterate to next available block
     }
-    ptrFreeBlock = next_block(ptrFreeBlock); //iterate to next available block 
-    }
-  // To begin, you can ignore the free list and just go through every single
-  // block in your memory looking for a free space big enough.
-  }
-  // Return NULL when you cannot find any available node big enough.
-  return NULL;
+  return NULL; //if ptrfreeBlock null, that means we cant find space so return nulll
 }
 
 /* Find a free block of at least the requested size in the free list.  Returns
@@ -167,7 +155,8 @@ Block* searchList(size_t reqSize) {
 Block* searchFreeList(size_t reqSize) {
   Block* ptrFreeBlock = free_list_head;
   long int checkSize = -reqSize;
-  // YOUR CODE HERE!
+  
+  //code starts here...
   // When you are ready, you can implement the free list.
   return NULL; //return null if we cant find anything
 }
@@ -203,13 +192,12 @@ void* mm_malloc(size_t size) {
   if(ptrFreeBlock != NULL){ //if we found a block
       long int positiveSize = -(ptrFreeBlock->info.size); //compute positiveSize which is negation of ptrFreeBlock size (positive value we can use to deduce correct size)
       long int actualBlockSize = positiveSize - reqSize; //calculate the actualBlockSize by subtracting reqSize from positiveSize (which is the negation of ptrFreeBlock->info.size)
-      // at this point we have found a match but the block is NOT too large, therefore just mark it as allocated:
 
-      if(actualBlockSize <= sizeof(Block)){ //if we found a match but the new block is NOT too big we simply can negate it
-          ptrFreeBlock->info.size*=-1; //block is not too big, so we can simply negate to show that it is now allocated
-      }
+      // at this point we have found a match but the block is NOT too large, therefore just mark it as allocated:
+      if(actualBlockSize <= sizeof(Block)) ptrFreeBlock->info.size*=-1;//if we found a match but the new block is NOT too big we simply can negate it 
+
+      //when actualBlockSize is larger then sizeOfBlock, the block is too large to allocate so we must start splitting
       if(actualBlockSize > sizeof(Block)){ //if we found a match but the new block is too big (we need to begin splitting)
-        //THIS IS WHERE SPLITTING HAPPENS (when actualBlockSize is larger then sizeOfBlock)
         //first lets return the first address that the program can safely write to
         splitBlock = (Block*)UNSCALED_POINTER_ADD(ptrFreeBlock, sizeof(BlockInfo) +reqSize); //save block pointer to splitBlock which is second part (or right side part) of split block. IE [Splitblock]
         splitBlock->info.prev = ptrFreeBlock; //this sets splitBlocks previous (which is the 1st part of splitlock, or left part) to be ptrFreeBlock, IE [ptrFreeBlock]][splitBlock]
@@ -221,7 +209,6 @@ void* mm_malloc(size_t size) {
         tmpFreeBlock = next_block(splitBlock);
         // if(tmpFreeBlock == NULL) malloc_list_tail = splitBlock; //this is causing segfault core dumped
         if(tmpFreeBlock != NULL) tmpFreeBlock->info.prev = splitBlock; //merge next_block(splitBlock) with its previous by setting nextSplitBlock(splitBlock) previous to be splitBlock
-
       }
   }
   //return macro that returns first address that a program can safely write to
@@ -233,7 +220,7 @@ void coalesce(Block* blockInfo) {
   Block* nextBlock = next_block(blockInfo);
   Block* previousBlock = blockInfo->info.prev;
   Block* tmpBlock = NULL;
- // YOUR CODE HERE!
+
  //checking nextBlock for coalesce (not null and size < 0 )
   if(nextBlock != NULL && (nextBlock->info.size < 0)){
     blockInfo->info.size += nextBlock->info.size - sizeof(BlockInfo); //must add the difference between nextBlockInfoSize - sizeOf(BlockInfo to blockInfo size to accomodate space
@@ -241,7 +228,7 @@ void coalesce(Block* blockInfo) {
     if(tmpBlock != NULL){ //if we are not at Tail  (not coalescing tail)
       tmpBlock->info.prev = blockInfo; //set nextNextBox previous to be blockInfo (merging the two)
     }
-    if(malloc_list_tail == nextBlock){ //if we are at Tail
+    else{ //otherwise we are at Tail
       malloc_list_tail = blockInfo; //set new tail
     }
   }
@@ -252,7 +239,7 @@ void coalesce(Block* blockInfo) {
     if(tmpBlock != NULL){ //check and see if it was tail or just a block in the chain, checks specifically we are not at Tail aka (not coalescing tail)
       tmpBlock->info.prev = previousBlock; //grabbing the block to the right and pointing it to the left (merging the two)
     }
-    if(malloc_list_tail == blockInfo){ //otherwise we are at the tail (hence coalescing tail)
+    else{ //otherwise we are at the tail (hence coalescing tail)
       malloc_list_tail = previousBlock; //update tail
     }
   }
